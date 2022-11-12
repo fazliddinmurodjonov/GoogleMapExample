@@ -6,7 +6,7 @@ Used components
 - HttpClient
 - GoogleMap
 - OpenStreetMap API
-- Clusters
+- Clustering markers
 - GoogleMap markers
 - JsonSerilization
 - Parsing Json
