@@ -40,10 +40,8 @@ class MyHomePage extends StatefulWidget {
 
 class _MyHomePageState extends State<MyHomePage> {
   final PanelController _controller = PanelController();
-  final Completer<GoogleMapController> _mapController = Completer();
-  late LatLng currentLocation;
-  Timer? _debounce;
-  GoogleMapController? mapController;
+  final Completer<GoogleMapController> _googleMapCompeleter = Completer();
+  GoogleMapController? _mapController;
   late ClusterManager _manager;
 
   @override
@@ -54,7 +52,7 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   void init() async {
-    mapController = await _mapController.future;
+    _mapController = await _googleMapCompeleter.future;
   }
 
   @override
@@ -62,7 +60,7 @@ class _MyHomePageState extends State<MyHomePage> {
     return SafeArea(
       child: Scaffold(
         appBar: AppBar(
-          title: const Text("SlidingUpPanelExample"),
+          title: const Text("GoogleMap example"),
         ),
         body: BlocProvider(
           lazy: true,
@@ -99,7 +97,7 @@ class _MyHomePageState extends State<MyHomePage> {
                 child: CarouselSlider(
                   items: context
                       .read<MainBloc>()
-                      .fakeAddressed
+                      .fakeAddresses
                       .map(
                         (e) => GestureDetector(
                           child: Container(
@@ -120,8 +118,8 @@ class _MyHomePageState extends State<MyHomePage> {
                       .toList(),
                   options: CarouselOptions(
                     onPageChanged: (index, reason) {
-                      var address = context.read<MainBloc>().fakeAddressed[index];
-                      mapController?.animateCamera(
+                      var address = context.read<MainBloc>().fakeAddresses[index];
+                      _mapController?.animateCamera(
                         CameraUpdate.newCameraPosition(
                           CameraPosition(
                               target: LatLng(double.parse(address.lat), double.parse(address.lon)),
@@ -143,9 +141,9 @@ class _MyHomePageState extends State<MyHomePage> {
                     child: GoogleMap(
                         mapType: MapType.normal,
                         initialCameraPosition: _parisCameraPosition,
-                        markers: markers,
+                        markers: _markers,
                         onMapCreated: (GoogleMapController controller) {
-                          _mapController.complete(controller);
+                          _googleMapCompeleter.complete(controller);
                           _manager.setMapId(controller.mapId);
                         },
                         onCameraMove: _manager.onCameraMove,
@@ -174,12 +172,12 @@ class _MyHomePageState extends State<MyHomePage> {
     );
   }
 
-  Set<Marker> markers = {};
+  Set<Marker> _markers = {};
 
   final CameraPosition _parisCameraPosition =
       const CameraPosition(target: LatLng(48.856613, 2.352222), zoom: 12.0);
 
-  List<Place> items = [
+  final List<Place> _items = [
     for (int i = 0; i < 10; i++)
       Place(name: 'Place $i', latLng: LatLng(48.848200 + i * 0.001, 2.319124 + i * 0.001)),
     for (int i = 0; i < 10; i++)
@@ -187,13 +185,12 @@ class _MyHomePageState extends State<MyHomePage> {
   ];
 
   ClusterManager _initClusterManager() {
-    return ClusterManager<Place>(items, _updateMarkers, markerBuilder: _markerBuilder);
+    return ClusterManager<Place>(_items, _updateMarkers, markerBuilder: _markerBuilder);
   }
 
   void _updateMarkers(Set<Marker> markers) {
-    print('Updated ${markers.length} markers');
     setState(() {
-      this.markers = markers;
+      _markers = markers;
     });
   }
 
@@ -202,9 +199,7 @@ class _MyHomePageState extends State<MyHomePage> {
           markerId: MarkerId(cluster.getId()),
           position: cluster.location,
           onTap: () {
-            for (var p in cluster.items) {
-              print(p);
-            }
+            //
           },
           icon: await _getMarkerBitmap(cluster.isMultiple ? 125 : 75,
               text: cluster.isMultiple ? cluster.count.toString() : null),

@@ -23,28 +23,31 @@ class FakeAddress {
 }
 
 class MainBloc extends Bloc<MainEvent, MainState> {
-  final String exampleApiKey = "1eff89edbcc1a3400cb73d9d5a655724";
+  final String _exampleApiKey = "1eff89edbcc1a3400cb73d9d5a655724";
+  final String _baseUrl = "https://nominatim.openstreetmap.org/";
 
-  final List<FakeAddress> fakeAddressed = [
+  final List<FakeAddress> _fakeAddresses = [
     FakeAddress(name: "Namangan", lat: "40.993599", lon: "71.677452"),
     FakeAddress(name: "Tashkent", lat: "41.299496", lon: "69.240074"),
     FakeAddress(name: "Samarkand", lat: "39.954868", lon: "66.312073"),
   ];
 
+  List<FakeAddress> get fakeAddresses => _fakeAddresses;
+
   MainBloc() : super(MainState()) {
     on<MainEvent>((event, emit) async {
       if (event is GetAddressInfo) {
         emit(MainState().copyWith(status: Status.loading));
-        await getAddressInfo(event.lat, event.lon, emit);
+        await _getAddressInfo(event.lat, event.lon, emit);
       }
     });
   }
 
-  Future<void> getAddressInfo(String lat, String lon, Emitter emitter) async {
+  Future<void> _getAddressInfo(String lat, String lon, Emitter emitter) async {
     try {
       var response = await HttpClient()
           .getUrl(Uri.parse(
-              'https://nominatim.openstreetmap.org/reverse?format=json&access_key=$exampleApiKey&lat=$lat&lon=$lon'))
+              '$_baseUrl/reverse?format=json&access_key=$_exampleApiKey&lat=$lat&lon=$lon'))
           .then((request) => request.close());
 
       await for (var contents in response.transform(const Utf8Decoder())) {
