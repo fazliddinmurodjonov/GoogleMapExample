@@ -40,7 +40,7 @@ class MyHomePage extends StatefulWidget {
 
 class _MyHomePageState extends State<MyHomePage> {
   final PanelController _controller = PanelController();
-  final Completer<GoogleMapController> _googleMapCompeleter = Completer();
+  final Completer<GoogleMapController> _googleMapCompleter = Completer();
   GoogleMapController? _mapController;
   late ClusterManager _manager;
 
@@ -52,7 +52,7 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   void init() async {
-    _mapController = await _googleMapCompeleter.future;
+    _mapController = await _googleMapCompleter.future;
   }
 
   @override
@@ -143,7 +143,7 @@ class _MyHomePageState extends State<MyHomePage> {
                         initialCameraPosition: _parisCameraPosition,
                         markers: _markers,
                         onMapCreated: (GoogleMapController controller) {
-                          _googleMapCompeleter.complete(controller);
+                          _googleMapCompleter.complete(controller);
                           _manager.setMapId(controller.mapId);
                         },
                         onCameraMove: _manager.onCameraMove,
