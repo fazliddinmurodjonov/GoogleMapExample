@@ -1,5 +1,6 @@
 Example project using GoogleMap,SliderPanel,Carousel with transparent background.
 
+*Used components*
 - Bloc
 - HttpClient
 - GoogleMap
